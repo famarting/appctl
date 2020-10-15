@@ -1,10 +1,13 @@
 kind: App
 apiVersion: appctl.io/v1
 metadata:
-  name: simple-app-a
+  name: simple-app
   annotations:
-    author: simple-app-a author
-    description: simple-app-a description
-    organization: simple-app-a_org
+    author: simple-app author
+    description: simple-app description
+    organization: simple-app_org
 spec:
   template: quarkus-jvm
+  vars:
+    - name: CONTAINER_IMAGE_TAG
+      value: test

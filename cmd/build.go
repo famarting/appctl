@@ -36,17 +36,11 @@ import (
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{
 	Use:   "build",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Executes the build recipe of your application",
+	Long: `This will pick the appropiate Makefile configured in your app.yaml 
+and execute it to build/test/package your application.`,
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.MaximumNArgs(1),
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Args:    cobra.MaximumNArgs(1),
 	PreRunE: loadAppConfig,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if appctl.Verbosity > 5 {
@@ -122,7 +116,7 @@ func loadAppConfig(cmd *cobra.Command, args []string) error {
 		}
 		appctl.ProjectDir = currentDir
 	}
-	if appctl.Verbosity > 5 {
+	if appctl.Verbosity >= 5 {
 		fmt.Println("Using dir " + appctl.ProjectDir + " as projectDir")
 	}
 	if appctl.AppFile == "" {
@@ -132,6 +126,9 @@ func loadAppConfig(cmd *cobra.Command, args []string) error {
 	appctl.AppConfig = &app.AppConfig{}
 	filebytes, err := ioutil.ReadFile(appctl.AppFile)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return errors.New("There is no app.yaml file in this directory, try running \"appctl init\" first :)")
+		}
 		return err
 	}
 	err = yaml.Unmarshal(filebytes, appctl.AppConfig)

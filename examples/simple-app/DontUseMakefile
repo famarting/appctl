@@ -1,7 +1,0 @@
-
-container-image: src/main/docker/Dockerfile.jvm pom.xml $(shell find src -type f -name '*')
-	mvn package
-	docker build -f src/main/docker/Dockerfile.jvm -t quay.io/famargon/simple-app-jvm:latest .
-	# echo "quay.io/famargon/simple-app-jvm:latest" > container-image
-
-.PHONY: container-image
