@@ -1,0 +1,10 @@
+kind: App
+apiVersion: appctl.io/v1
+metadata:
+  name: simple-app-a
+  annotations:
+    author: simple-app-a author
+    description: simple-app-a description
+    organization: simple-app-a_org
+spec:
+  template: quarkus-jvm

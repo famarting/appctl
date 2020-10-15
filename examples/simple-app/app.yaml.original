@@ -1,0 +1,22 @@
+apiVersion: appctl.io/v1
+kind: App
+metadata:
+  name: simple-app
+  annotations:
+    description: Simple app using Quarkus Java framework
+    author: the appctl authors
+    organization: famargon
+spec:
+  # custom makefile 
+  # recipes:
+  #   build: /full-path/.../wrapper-makefile/examples/QuarkusJVMMakefile.mk
+
+  # or catalog based
+  template: quarkus-jvm
+  
+  # catalog: default # not implemented
+
+  # pass variables to recipes, either local recipes or recipes from templates
+  vars:
+    - name: CONTAINER_IMAGE_TAG
+      value: test

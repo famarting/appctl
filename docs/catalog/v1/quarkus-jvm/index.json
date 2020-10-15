@@ -1,0 +1,9 @@
+{
+    "template": "quarkus-jvm",
+    "recipes": {
+        "build": {
+            "makefile": "QuarkusJVMMakefile.mk",
+            "input": ["CONTAINER_IMAGE_NAME"]
+        }
+    }
+}
