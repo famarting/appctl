@@ -14,13 +14,15 @@ type AppMetadata struct {
 }
 
 type AppConfigSpec struct {
-	Recipes  AppRecipes `yaml:"recipes,omitempty"`
-	Template string     `yaml:"template,omitempty"`
-	Vars     []InputVar `yaml:"vars,omitempty"`
+	Recipes  map[string]AppRecipe `yaml:"recipes,omitempty"`
+	Template string               `yaml:"template,omitempty"`
+	Vars     []InputVar           `yaml:"vars,omitempty"`
 }
 
-type AppRecipes struct {
-	Build string `yaml:"build,omitempty"`
+type AppRecipe struct {
+	Template string     `yaml:"template,omitempty"`
+	Recipe   string     `yaml:"recipe,omitempty"`
+	Vars     []InputVar `yaml:"vars,omitempty"`
 }
 
 type InputVar struct {

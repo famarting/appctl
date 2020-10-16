@@ -1,0 +1,9 @@
+{
+    "template": "docker",
+    "recipes": {
+        "push": {
+            "makefile": "DockerPush.mk",
+            "input": ["CONTAINER_IMAGE_NAME", "CONTAINER_IMAGE_TAG"]
+        }
+    }
+}

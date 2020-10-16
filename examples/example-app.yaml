@@ -1,0 +1,26 @@
+apiVersion: appctl.io/v1
+kind: App
+metadata:
+  name: simple-app
+  annotations:
+    description: Simple app using Quarkus Java framework
+    author: the appctl authors
+    organization: famargon
+spec:
+  # or all recipes from one template
+  template: quarkus-jvm
+  # catalog: default # not implemented
+  # pass variables to recipes all recipes
+  vars:
+    - name: CONTAINER_IMAGE_TAG
+      value: test
+
+  # specific recipes from different templates
+  # it's possible to override recipes from the global template matching it's name
+  recipes:
+    build: 
+      template: whatever-template
+      recipe: some-recipe
+      vars:
+        - name: CUSTOM_VAR
+          value: value

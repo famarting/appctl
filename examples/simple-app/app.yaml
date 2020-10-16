@@ -5,9 +5,21 @@ metadata:
   annotations:
     author: simple-app author
     description: simple-app description
-    organization: simple-app_org
+    organization: famargon
 spec:
   template: quarkus-jvm
   vars:
     - name: CONTAINER_IMAGE_TAG
-      value: test
+      value: latest
+  recipes:
+    overload:
+      recipe: build
+      vars:
+        - name: CONTAINER_IMAGE_TAG
+          value: appctl-test
+    push: 
+      template: docker
+      recipe: push
+      vars:
+        - name: CONTAINER_IMAGE_TAG
+          value: appctl-test

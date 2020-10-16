@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -122,14 +123,25 @@ func downloadFile(filepath string, url string) error {
 	}
 	defer resp.Body.Close()
 
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
+	if appctl.Verbosity >= 10 {
+		fmt.Println(resp.Status)
 	}
-	defer out.Close()
 
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	return err
+	if resp.StatusCode == 200 {
+		// Create the file
+		out, err := os.Create(filepath)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		// Write the body to file
+		_, err = io.Copy(out, resp.Body)
+	} else if resp.StatusCode == 404 {
+		return os.ErrNotExist
+	} else {
+		return errors.New(resp.Status)
+	}
+
+	return nil
 }

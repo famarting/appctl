@@ -1,0 +1,4 @@
+verbosity: 3
+catalogURL: http://localhost:8080
+# catalogURL: https://famartinrh.github.io/appctl
+force: true

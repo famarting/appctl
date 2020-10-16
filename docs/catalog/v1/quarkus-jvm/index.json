@@ -3,7 +3,7 @@
     "recipes": {
         "build": {
             "makefile": "QuarkusJVMMakefile.mk",
-            "input": ["CONTAINER_IMAGE_NAME"]
+            "input": ["CONTAINER_IMAGE_NAME", "CONTAINER_IMAGE_TAG"]
         }
     }
 }
