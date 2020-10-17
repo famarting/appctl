@@ -1,38 +1,69 @@
-## Appctl
+# Appctl
+
 ### Unified developer experience across all your projects
 
-Do you write your own build scripts or do you prefer to use `make`? Are you too lazy to write your own Makefiles? do you even know what `make` is? Do you suffer of having several projects written with different technologies and you always struggle to remember how to build/test/package each one? 
+Are you too lazy to write your own build scripts or your own Makefiles? Do you even know what `make` is? Do you suffer from having several projects written with different technologies and you always struggle to remember how to build/test/package each one?
 
-No worries `appctl` knows well about `make` and Makefiles and leverages it for you so you 
-have the simplest build chain accross all your projects, works for Java, Go,.. no matter what is the underline technology, it's actually indiferent to `appctl`. You just specify what kind of app you are working with and `appctl` manages it for you so you don't have to remember the exact commands to build each one of your projects.
+This project aims to provide a simple and unified development experice across all your projects
 
-You could just write Makefiles following your own guidelines in all your projects and you would already have a unified developer experience. But because you are too lazy and you won't do that here is `appctl` to do that for you.
+## What does `appctl` do?
 
-I hope you like it
+Appctl executes your most common workflows in your development process through a simple and unified CLI across all your projects
 
-### Usage
+Actually this tool does nothing, your typical build tools do the job. You will use npm for nodejs apps, maven for java, docker for container images, ... Whatever tool, but `appctl` will invoke them for you.
+You may even forget about all of that but only remember to execute `appctl build`
 
-First install the binary
+## Try it
+
+To install from source, only pre-requisite is golang >= 1.13
 ```
 make install
 ```
 
-Then you can use it :)
-
-Examples:
-
+Or just download and install it with the `install.sh` script
 ```
-appctl build examples/simple-app/
+curl -sfL https://raw.githubusercontent.com/famartinrh/appctl/master/install.sh | sh -
 ```
 
-or
+There are some examples of applications using `appctl` under the folder `examples`
 
+#### Build, test and create a container image of Quarkus app (Java)
 
 ```
 cd examples/simple-app
 
+appctl status
+
 appctl build
+
+docker images | grep simple-app
+
+cat app.yaml
 ```
 
-https://www.gnu.org/software/make/manual/make.html
+#### Microservices application using nodejs
+
+```
+cd examples/microservices-example
+
+appctl status
+
+appctl build
+
+docker images | grep appctl-
+
+cat app.yaml
+
+cat api-gateway/app.yaml
+```
+
+<!-- ## How does it work? -->
+
+
+
+<!-- https://www.gnu.org/software/make/manual/make.html -->
+
+
+
+
 

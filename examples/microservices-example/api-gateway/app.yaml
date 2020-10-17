@@ -3,10 +3,13 @@ apiVersion: appctl.io/v1
 metadata:
   name: api-gateway
   annotations:
-    author: Fabian Martinez
+    author: appct-examples-author
     description: api-gateway description
-    organization: famargon
+    organization: my-org
 spec:
   templates:
   - nodejs
   - docker
+  vars:
+    - name: CONTAINER_IMAGE_NAME
+      value: appctl-api-gateway:latest

@@ -3,13 +3,16 @@ apiVersion: appctl.io/v1
 metadata:
   name: users-service
   annotations:
-    author: Fabian Martinez
+    author: appct-examples-author
     description: users-service description
-    organization: famargon
+    organization: my-org
 spec:
   templates:
   - nodejs
   - docker
+  vars:
+    - name: CONTAINER_IMAGE_NAME
+      value: appctl-users-service:latest
   recipes:
     all:
       - name: nodejs

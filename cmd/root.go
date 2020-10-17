@@ -104,6 +104,7 @@ func initializeConfig(cmd *cobra.Command) error {
 				if err != nil {
 					return err
 				}
+				os.MkdirAll(filepath.Dir(appctlConfigFilePath), os.ModePerm)
 				err = ioutil.WriteFile(appctlConfigFilePath, bytes, 0664)
 				if err != nil {
 					return err

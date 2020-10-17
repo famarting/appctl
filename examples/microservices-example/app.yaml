@@ -3,9 +3,9 @@ apiVersion: appctl.io/v1
 metadata:
   name: microservices-example
   annotations:
-    author: Fabian Martinez
+    author: appct-examples-author
     description: microservices-example description
-    organization: famargon
+    organization: my-org
 spec:
   recipes:
     build:
@@ -14,7 +14,7 @@ spec:
         recipes:
           - nodejs/build
           - docker/build
-          - push
+          # - push # uncomment to run docker push on all projects
         apps:
           - api-gateway
           - fruits-service

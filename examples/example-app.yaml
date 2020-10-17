@@ -5,7 +5,7 @@ metadata:
   annotations:
     description: Simple app using Quarkus Java framework
     author: the appctl authors
-    organization: famargon
+    organization: my-org
 spec:
   # all recipes from one template
   template: quarkus-jvm
