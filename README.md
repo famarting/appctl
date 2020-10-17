@@ -57,13 +57,35 @@ cat app.yaml
 cat api-gateway/app.yaml
 ```
 
-<!-- ## How does it work? -->
+## How does it work?
 
+Appctl basically executes predefined Makefiles in your projects, Makefiles that just run whatever commands are needed to perform some task in your development process. Appctl defines this concepts:
 
+### Recipes
+A recipe is a list of tasks to be executed sequentially by Appctl. Developers can define recipes in the `app.yaml` file, other kind of recipes are also defined in `Templates`.
 
-<!-- https://www.gnu.org/software/make/manual/make.html -->
+### Tasks
+One task can execute one or more pre-defined recipes from one `Template`
 
+### Templates
 
+A template defines a list of recipes. But this recipes are special, they consist of the execution of a Makefile, i.e: [This is the docker template](docs/catalog/v1/docker/). As you can see the `index.json` file defines a list of "recipes" and each one points to a Makefile stored alongside the index.json file. [This](examples/simple-app/app.yaml) is an example showing the usage of recipes defined in templates.
 
+There is a special template called `appctl` which invokes other appctl recipes on applications found in subdirectories of the current application directory. An example of this can be found on the [microservices example](examples/microservices-example/app.yaml)
 
+### Applications
 
+Managed with `app.yaml` files that can be created with `appctl init -n <your-app-name>`. Applications can use one or more templates and inherit all of their recipes, [here](examples/microservices-example/api-gateway/app.yaml) an example of an application inheriting all the recipes from the "nodejs" and "docker" templates. You can see the inherited recipes executing `appctl status` into the application directory.
+
+`appctl status` will display a list with the available recipes that the current application has.
+
+A recipe can be executed in an application by running:
+```
+appctl <recipe-name>
+```
+
+### Templates catalog
+
+Templates allow to manage recipes and Makefiles and they are made available to you with an online [catalog](docs/catalog/v1). Because the catalog is just some [static files](https://famartinrh.github.io/appctl/catalog/v1/docker/) available through an http-server, currently the catalog is hosted in github pages and managed in this repository (under the `docs/catalog` folder)
+
+Appctl will download the templates used in your applications into the `~/.appctl/templates/` directory
