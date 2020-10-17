@@ -13,13 +13,14 @@ spec:
       value: latest
   recipes:
     overload:
-      recipe: build
-      vars:
-        - name: CONTAINER_IMAGE_TAG
-          value: appctl-test
+      - template: quarkus-jvm
+        recipe: build
+        vars:
+          - name: CONTAINER_IMAGE_TAG
+            value: appctl-test
     push: 
-      template: docker
-      recipe: push
-      vars:
-        - name: CONTAINER_IMAGE_TAG
-          value: appctl-test
+      - template: docker
+        recipe: push
+        vars:
+          - name: CONTAINER_IMAGE_TAG
+            value: appctl-test

@@ -1,0 +1,15 @@
+{
+    "port":10000,
+    "services":[
+        {
+            "name":"users",
+            "url":"http://users-service-app:8888",
+            "mapping":"/users*"
+        },
+        {
+            "name":"fruits",
+            "url":"http://fruits-service-app:9999",
+            "mapping":"/fruits*"
+        }
+    ]
+}

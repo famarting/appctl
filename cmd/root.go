@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/famartinrh/appctl/pkg/core"
 	appctl "github.com/famartinrh/appctl/pkg/types/cmd"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -38,25 +39,25 @@ var rootCmd = &cobra.Command{
 	// 	Long: `Unified development experience using make.
 	// With appctl you can build/test/package your applications running the same commands,
 	// no matter the languages or frameworks used`,
-	Args: cobra.MaximumNArgs(2),
+	Args:         cobra.MaximumNArgs(2),
+	SilenceUsage: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
 		return initializeConfig(cmd)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			//TODO display help
 			return cmd.Help()
 		} else {
 			recipe := args[0]
-			return execRecipe(cmd, args, recipe)
+			return core.ExecRecipe(args, recipe, "", appctl.AppFile)
 		}
 	},
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
 		os.Exit(1)
 	}
 }

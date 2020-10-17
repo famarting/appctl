@@ -42,10 +42,9 @@ func execute(command *Command, stdOutFile *os.File, stdErrFile *os.File) error {
 }
 
 func BuildProject(makefilePath string, projectDir string, vars []app.InputVar) error {
-	// make -f $(pwd)/examples/QuarkusJVMMakefile.mk -C examples/simple-app
 	env := []string{}
 	for _, v := range vars {
-		//TODO verify does this need quotes?
+		//TODO verify, does this need quotes?
 		env = append(env, v.Name+"="+v.Value)
 	}
 	cmd := &Command{Cmd: []string{"make", "-f", makefilePath, "-C", projectDir}, Env: env}

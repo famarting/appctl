@@ -1,0 +1,8 @@
+{
+    "template": "nodejs",
+    "recipes": {
+        "build": {
+            "makefile": "NodejsBuild.mk"
+        }
+    }
+}

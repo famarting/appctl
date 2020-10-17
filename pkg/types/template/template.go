@@ -10,3 +10,9 @@ type TemplateRecipe struct {
 	Makefile  string   `json:"makefile,omitempty"`
 	InputVars []string `json:"input,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
 }
+
+type TemplateRecipeRef struct {
+	Template string
+	Name     string
+	Recipe   TemplateRecipe
+}

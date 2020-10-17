@@ -51,7 +51,6 @@ func init() {
 }
 
 func runInitCmd(cmd *cobra.Command, args []string) error {
-	fmt.Println("init called")
 
 	//TODO use template descriptor to print input values for template
 	if appTemplate != "" {
@@ -75,7 +74,7 @@ func runInitCmd(cmd *cobra.Command, args []string) error {
 			},
 		},
 		Spec: app.AppConfigSpec{
-			Template: appTemplate,
+			Templates: []string{appTemplate},
 		},
 	}
 	bytes, err := yaml.Marshal(appConfig)

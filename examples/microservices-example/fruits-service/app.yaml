@@ -1,0 +1,12 @@
+kind: App
+apiVersion: appctl.io/v1
+metadata:
+  name: fruits-service
+  annotations:
+    author: Fabian Martinez
+    description: fruits-service description
+    organization: famargon
+spec:
+  templates:
+  - nodejs
+  - docker

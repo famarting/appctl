@@ -1,0 +1,12 @@
+kind: App
+apiVersion: appctl.io/v1
+metadata:
+  name: api-gateway
+  annotations:
+    author: Fabian Martinez
+    description: api-gateway description
+    organization: famargon
+spec:
+  templates:
+  - nodejs
+  - docker

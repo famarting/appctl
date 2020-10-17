@@ -1,0 +1,20 @@
+kind: App
+apiVersion: appctl.io/v1
+metadata:
+  name: users-service
+  annotations:
+    author: Fabian Martinez
+    description: users-service description
+    organization: famargon
+spec:
+  templates:
+  - nodejs
+  - docker
+  recipes:
+    all:
+      - name: nodejs
+        template: nodejs
+        recipes: [build]
+      - name: docker
+        template: docker
+        recipes: [build, push]

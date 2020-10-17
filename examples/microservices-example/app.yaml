@@ -1,0 +1,21 @@
+kind: App
+apiVersion: appctl.io/v1
+metadata:
+  name: microservices-example
+  annotations:
+    author: Fabian Martinez
+    description: microservices-example description
+    organization: famargon
+spec:
+  recipes:
+    build:
+      - name: build container images for all microservices
+        template: appctl
+        recipes:
+          - nodejs/build
+          - docker/build
+          - push
+        apps:
+          - api-gateway
+          - fruits-service
+          - users-service

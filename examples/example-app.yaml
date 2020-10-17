@@ -7,10 +7,9 @@ metadata:
     author: the appctl authors
     organization: famargon
 spec:
-  # or all recipes from one template
+  # all recipes from one template
   template: quarkus-jvm
-  # catalog: default # not implemented
-  # pass variables to recipes all recipes
+  # pass variables to all recipes
   vars:
     - name: CONTAINER_IMAGE_TAG
       value: test
@@ -19,8 +18,8 @@ spec:
   # it's possible to override recipes from the global template matching it's name
   recipes:
     build: 
-      template: whatever-template
-      recipe: some-recipe
-      vars:
-        - name: CUSTOM_VAR
-          value: value
+      - template: whatever-template
+        recipe: some-recipe
+        vars:
+          - name: CUSTOM_VAR
+            value: value

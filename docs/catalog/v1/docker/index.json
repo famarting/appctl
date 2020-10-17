@@ -4,6 +4,10 @@
         "push": {
             "makefile": "DockerPush.mk",
             "input": ["CONTAINER_IMAGE_NAME", "CONTAINER_IMAGE_TAG"]
+        },
+        "build": {
+            "makefile": "DockerBuild.mk",
+            "input": ["CONTAINER_IMAGE_NAME", "CONTAINER_IMAGE_TAG"]
         }
     }
 }

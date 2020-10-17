@@ -1,0 +1,8 @@
+{
+    "template": "maven",
+    "recipes": {
+        "install": {
+            "makefile": "MavenInstall.mk"
+        }
+    }
+}

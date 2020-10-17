@@ -1,17 +1,8 @@
 package cmd
 
-import (
-	"github.com/famartinrh/appctl/pkg/types/app"
-	"github.com/famartinrh/appctl/pkg/types/template"
-)
-
-// var CfgFile string
 var AppFile string
 
 var Verbosity int
-
-var AppConfig *app.AppConfig
-var ProjectDir string
 var ForceDowload bool
 
 type AppctlConfig struct {
@@ -20,9 +11,24 @@ type AppctlConfig struct {
 	Force      bool   `yaml:"force"`
 }
 
-type AvailableRecipe struct {
-	RecipeName     string
+type ParsedRecipe struct {
+	RecipeName string
+	Multistep  bool
+	//only if no multi step
 	TemplateName   string
 	TemplateRecipe string
-	Recipe         template.TemplateRecipe
+
+	Err error
+
+	// tasks []ParsedRecipeTask
 }
+
+// type ParsedRecipeTask struct {
+// 	TaskName     string
+// 	TemplateName string
+
+// 	TemplateRecipe string
+// 	Recipe         template.TemplateRecipe
+
+// 	TemplateRecipes []string
+// }
