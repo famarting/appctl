@@ -1,5 +1,5 @@
 #!/bin/sh
 set -e
 
-curl https://raw.githubusercontent.com/famartinrh/appctl/master/appctl --output ~/bin/appctl
-chmod +x ~/bin/appctl
+curl https://raw.githubusercontent.com/famartinrh/appctl/master/appctl --output $HOME/bin/appctl
+chmod +x $HOME/bin/appctl

@@ -42,7 +42,7 @@ var appTemplate string
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().StringVarP(&appName, "name", "n", "", "Application name, better if short and simple")
+	initCmd.Flags().StringVarP(&appName, "name", "n", "", "Application name, the shorter the better")
 	initCmd.MarkFlagRequired("name")
 
 	initCmd.Flags().StringVarP(&appTemplate, "template", "t", "", "Appctl template to use, you can find the list of available templates at https://github.com/famartinrh/appctl/tree/master/docs/catalog")

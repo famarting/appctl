@@ -88,4 +88,4 @@ appctl <recipe-name>
 
 Templates allow to manage recipes and Makefiles and they are made available to you with an online [catalog](docs/catalog/v1). Because the catalog is just some [static files](https://famartinrh.github.io/appctl/catalog/v1/docker/) available through an http-server, currently the catalog is hosted in github pages and managed in this repository (under the `docs/catalog` folder)
 
-Appctl will download the templates used in your applications into the `~/.appctl/templates/` directory
+Appctl will download the templates used in your applications into the `$HOME/.appctl/templates/` directory
