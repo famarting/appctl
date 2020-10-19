@@ -108,6 +108,34 @@ func getLocalMakefile(template *template.Template, recipe string) (string, error
 	return makefileFilePath, nil
 }
 
+func ListAvailableTemplates() ([]template.Template, error) {
+	catalogURL := viper.GetString("catalogURL")
+
+	resp, err := http.Get(catalogURL + "/catalog/v1/index.json")
+	if err != nil {
+		fmt.Println("Error queriying templates " + err.Error())
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if appctl.Verbosity >= 10 {
+		fmt.Println(resp.Status)
+	}
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var list []template.Template = []template.Template{}
+	err = json.Unmarshal(bytes, &list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
 func downloadFile(filepath string, url string) error {
 
 	if appctl.Verbosity >= 10 {

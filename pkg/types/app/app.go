@@ -8,7 +8,7 @@ type AppConfig struct {
 	Spec AppConfigSpec `yaml:"spec,omitempty"`
 
 	//ProjectDir for internal usage
-	ProjectDir string `yaml:-`
+	ProjectDir string `yaml:"-"`
 }
 
 type AppMetadata struct {

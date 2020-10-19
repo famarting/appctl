@@ -1,0 +1,40 @@
+[
+{
+    "template": "docker",
+    "recipes": {
+        "push": {
+            "makefile": "DockerPush.mk",
+            "input": ["CONTAINER_IMAGE_NAME", "CONTAINER_IMAGE_TAG"]
+        },
+        "build": {
+            "makefile": "DockerBuild.mk",
+            "input": ["CONTAINER_IMAGE_NAME", "CONTAINER_IMAGE_TAG"]
+        }
+    }
+},
+{
+    "template": "maven",
+    "recipes": {
+        "install": {
+            "makefile": "MavenInstall.mk"
+        }
+    }
+},
+{
+    "template": "nodejs",
+    "recipes": {
+        "build": {
+            "makefile": "NodejsBuild.mk"
+        }
+    }
+},
+{
+    "template": "quarkus-jvm",
+    "recipes": {
+        "build": {
+            "makefile": "QuarkusJVMMakefile.mk",
+            "input": ["CONTAINER_IMAGE_NAME", "CONTAINER_IMAGE_TAG"]
+        }
+    }
+}
+]

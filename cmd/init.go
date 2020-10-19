@@ -16,15 +16,19 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/famartinrh/appctl/pkg/catalog"
 	"github.com/famartinrh/appctl/pkg/types/app"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
+
+	"github.com/manifoldco/promptui"
 )
 
 // initCmd represents the init command
@@ -36,21 +40,87 @@ this file allow you to configure how appctl will build your app for you`,
 	RunE: runInitCmd,
 }
 
-var appName string
-var appTemplate string
-
 func init() {
 	rootCmd.AddCommand(initCmd)
-
-	initCmd.Flags().StringVarP(&appName, "name", "n", "", "Application name, the shorter the better")
-	initCmd.MarkFlagRequired("name")
-
-	initCmd.Flags().StringVarP(&appTemplate, "template", "t", "", "Appctl template to use, you can find the list of available templates at https://github.com/famartinrh/appctl/tree/master/docs/catalog")
-	// initCmd.MarkFlagRequired("template")
 
 }
 
 func runInitCmd(cmd *cobra.Command, args []string) error {
+
+	fmt.Println("This utility will guide you through creating an app.yaml file.")
+	fmt.Println("app.yaml files allow to manage the development process of your apps using appctl.")
+	fmt.Println()
+	fmt.Println("Press ^C at any time to quit.")
+	fmt.Println()
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	defaultAppName := filepath.Base(wd)
+
+	prompt := promptui.Prompt{
+		Label: "application name (" + defaultAppName + ")",
+		Validate: func(s string) error {
+			if strings.Contains(s, " ") {
+				return errors.New("Invalid name, please use do not use whitespaces")
+			}
+			return nil
+		},
+	}
+	appName, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+	if appName == "" {
+		appName = defaultAppName
+	}
+
+	prompt = promptui.Prompt{
+		Label: "description",
+	}
+	appDescription, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	prompt = promptui.Prompt{
+		Label: "organization",
+	}
+	organization, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	prompt = promptui.Prompt{
+		Label: "author",
+	}
+	author, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	templates, err := catalog.ListAvailableTemplates()
+	if err != nil {
+		return err
+	}
+	templateNames := []string{}
+	for _, t := range templates {
+		templateNames = append(templateNames, t.Template)
+	}
+	templateSelectPrompt := promptui.Select{
+		Label: "application template",
+		Items: templateNames,
+	}
+	_, appTemplate, err := templateSelectPrompt.Run()
+	if err != nil {
+		return err
+	}
+
+	return writeAppConfigFile(appName, appDescription, author, organization, appTemplate)
+}
+
+func writeAppConfigFile(appName string, description string, author string, organization string, appTemplate string) error {
 
 	//TODO use template descriptor to print input values for template
 	if appTemplate != "" {
@@ -67,10 +137,9 @@ func runInitCmd(cmd *cobra.Command, args []string) error {
 		Metadata: app.AppMetadata{
 			Name: appName,
 			Annotations: map[string]string{
-				// description: Simple app using Quarkus Java framework
-				"description":  appName + " description",
-				"author":       appName + " author",
-				"organization": appName + "_org",
+				"description":  description,
+				"author":       author,
+				"organization": organization,
 			},
 		},
 		Spec: app.AppConfigSpec{
@@ -86,10 +155,30 @@ func runInitCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(currentDir, "app.yaml"), bytes, 0664)
+
+	appConfigFilePath := filepath.Join(currentDir, "app.yaml")
+
+	fmt.Println("About to write to " + appConfigFilePath + ":")
+	fmt.Println()
+	fmt.Println(string(bytes))
+	fmt.Println()
+
+	prompt := promptui.Prompt{
+		Label:     "Is this OK",
+		IsConfirm: true,
+	}
+	_, err = prompt.Run()
+	if err != nil {
+		fmt.Println("Cancelling...")
+		return err
+	}
+
+	err = ioutil.WriteFile(appConfigFilePath, bytes, 0664)
 	if err != nil {
 		return err
 	}
-	fmt.Println("app.yaml successfully created")
+	fmt.Println("app.yaml successfully created.")
+	fmt.Println()
+	fmt.Println("To check the tasks you can now execute run: `appctl status`")
 	return nil
 }

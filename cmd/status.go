@@ -37,6 +37,7 @@ var statusCmd = &cobra.Command{
 		fmt.Println("In the application " + appConfig.Metadata.Name)
 		fmt.Println()
 		fmt.Println("Available recipes:")
+		fmt.Println("  (use \"appctl <recipe>\" to execute a recipe and perform it's actions in your app")
 		fmt.Println()
 
 		parsedRecipes, err := core.AvailableRecipes(appConfig)
