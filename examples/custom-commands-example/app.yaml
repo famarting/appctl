@@ -1,0 +1,32 @@
+kind: App
+apiVersion: appctl.io/v2
+metadata:
+  name: command-mode
+  annotations:
+    author: ""
+    description: ""
+    organization: ""
+spec:
+  templates:
+    - nodejs
+    - docker
+  vars:
+    - name: CONTAINER_IMAGE_NAME
+      value: appctl-users-service:latest
+  recipes:
+    run:
+      description: Run the app locally
+      steps:
+      - name: run command
+        vars:
+          - name: FILE
+            value: index.js
+        run: node $FILE
+    check-image:
+      description: Finds locally the docker image for this app
+      steps:
+        - name: find docker image
+          vars:
+            - name: containerctl
+              value: docker
+          run: $containerctl images $CONTAINER_IMAGE_NAME

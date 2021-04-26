@@ -49,6 +49,8 @@ var rootCmd = &cobra.Command{
 		if len(args) == 0 {
 			return cmd.Help()
 		} else {
+			//TODO add option to pass vars in the exec command
+			// https://stackoverflow.com/questions/10781516/how-to-pipe-several-commands-in-go
 			recipe := args[0]
 			return core.ExecRecipe(args, recipe, "", appctl.AppFile)
 		}
@@ -57,7 +59,6 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		// fmt.Println(err)
 		os.Exit(1)
 	}
 }

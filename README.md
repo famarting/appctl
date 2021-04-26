@@ -1,5 +1,7 @@
 # Appctl
 
+Appctl is a developer oriented multi-purpose command line tool. It allows you to abstract the tipical commands you use to build, test, package,... your applications, this way you can use a similar set of commands accross all your projects, regardless of the technology used.
+
 ### Unified developer experience across all your projects
 
 Are you too lazy to write your own build scripts or your own Makefiles? Do you even know what `make` is? Do you suffer from having several projects written with different technologies and you always struggle to remember how to build/test/package each one?
@@ -8,7 +10,7 @@ This project aims to provide a simple and unified development experice across al
 
 ## What does `appctl` do?
 
-Appctl executes your most common workflows in your development process through a simple and unified CLI across all your projects
+Appctl executes your most common workflows in your development process through a simple and unified CLI
 
 Actually this tool does nothing, your typical build tools do the job. You will use npm for nodejs apps, maven for java, docker for container images, ... Whatever tool, but `appctl` will invoke them for you.
 You may even forget about all of that but only remember to execute `appctl build`

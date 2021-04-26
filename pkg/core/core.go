@@ -11,8 +11,9 @@ import (
 	"strings"
 
 	"github.com/famartinrh/appctl/pkg/catalog"
+	"github.com/famartinrh/appctl/pkg/cmd"
 	"github.com/famartinrh/appctl/pkg/make"
-	"github.com/famartinrh/appctl/pkg/types/app"
+	app "github.com/famartinrh/appctl/pkg/types/app/v2"
 	appctl "github.com/famartinrh/appctl/pkg/types/cmd"
 	"github.com/famartinrh/appctl/pkg/types/template"
 
@@ -40,7 +41,7 @@ func ExecRecipe(args []string, name string, projectDir string, appFile string) e
 			}
 			fmt.Println()
 			fmt.Println("-> Executing recipe \"" + parsedRecipe.RecipeName + "\"")
-			err := ExecuteTasks(parsedRecipe, appConfig)
+			err := ExecuteRecipeSteps(parsedRecipe, appConfig)
 			executed = true
 			if err != nil {
 				return err
@@ -162,21 +163,23 @@ func AvailableRecipes(appConfig *app.AppConfig) ([]*appctl.ParsedRecipe, error) 
 	sort.Strings(orderedRecipes)
 
 	for _, customRecipe := range orderedRecipes {
-		tasks := appConfig.Spec.Recipes[customRecipe]
+		recipeObj := appConfig.Spec.Recipes[customRecipe]
+
+		steps := recipeObj.Steps
 
 		if _, ok := globalRecipes[customRecipe]; ok {
 			overridenRecipes[customRecipe] = customRecipe
 		}
 
-		if len(tasks) == 0 {
+		if len(steps) == 0 {
 			availableRecipes = append(availableRecipes, &appctl.ParsedRecipe{
 				RecipeName: customRecipe,
-				Err:        errors.New("Recipe does not specify any task"),
+				Err:        errors.New("Recipe does not specify any step"),
 			})
 		} else {
 			errmsgs := []string{}
-			for _, task := range tasks {
-				if err := validateRecipeTask(&task); err != nil {
+			for _, step := range steps {
+				if err := validateRecipeStep(&step); err != nil {
 					errmsgs = append(errmsgs, err.Error())
 				}
 			}
@@ -185,16 +188,26 @@ func AvailableRecipes(appConfig *app.AppConfig) ([]*appctl.ParsedRecipe, error) 
 					RecipeName: customRecipe,
 					Err:        errors.New(strings.Join(errmsgs, ". ")),
 				})
-			} else if len(tasks) == 1 && tasks[0].Recipes == nil {
-				availableRecipes = append(availableRecipes, &appctl.ParsedRecipe{
-					RecipeName:     customRecipe,
-					TemplateName:   tasks[0].Template,
-					TemplateRecipe: tasks[0].Recipe,
-				})
+			} else if len(steps) == 1 && steps[0].Recipes == nil {
+				if steps[0].RunCmd != "" {
+					availableRecipes = append(availableRecipes, &appctl.ParsedRecipe{
+						RecipeName:        customRecipe,
+						RecipeDescription: recipeObj.Description,
+						CommandMode:       true,
+					})
+				} else {
+					availableRecipes = append(availableRecipes, &appctl.ParsedRecipe{
+						RecipeName:        customRecipe,
+						RecipeDescription: recipeObj.Description,
+						TemplateName:      steps[0].Template,
+						TemplateRecipe:    steps[0].Recipe,
+					})
+				}
 			} else {
 				availableRecipes = append(availableRecipes, &appctl.ParsedRecipe{
-					RecipeName: customRecipe,
-					Multistep:  true,
+					RecipeName:        customRecipe,
+					RecipeDescription: recipeObj.Description,
+					Multistep:         true,
 				})
 			}
 		}
@@ -223,31 +236,33 @@ func AvailableRecipes(appConfig *app.AppConfig) ([]*appctl.ParsedRecipe, error) 
 	return availableRecipes, nil
 }
 
-func validateRecipeTask(task *app.AppRecipeTask) error {
-	if task.Recipe != "" && task.Recipes != nil {
-		return errors.New("Invalid task declaration, only one of \"recipe\" or \"recipes\" allowed")
+func validateRecipeStep(step *app.AppRecipeStep) error {
+	if step.Recipe != "" && step.Recipes != nil {
+		return errors.New("Invalid step declaration, only one of \"recipe\" or \"recipes\" allowed")
+	} else if step.RunCmd != "" && step.Template != "" {
+		return errors.New("Invalid step declaration, only one of \"run\" or \"template\" allowed")
 	}
-	if task.Template != "" && (task.Recipe != "" || task.Recipes != nil) {
-		if task.Template == "appctl" {
-			if task.Apps == nil {
-				return errors.New("Missing apps to run tasks on")
+	if step.Template != "" && (step.Recipe != "" || step.Recipes != nil) {
+		if step.Template == "appctl" {
+			if step.Apps == nil {
+				return errors.New("Missing apps to run steps on")
 			}
 			//TODO verify apps exists
 			//TODO verify recipe or recipes exists in apps
 		} else {
-			customRecipeTemplate, err := catalog.GetLocalTemplate(task.Template)
+			customRecipeTemplate, err := catalog.GetLocalTemplate(step.Template)
 			if err != nil {
 				if os.IsNotExist(err) {
-					return errors.New("Template \"" + task.Template + "\" not found")
+					return errors.New("Template \"" + step.Template + "\" not found")
 				}
 				return err
 			}
-			if task.Recipe != "" {
-				if _, ok := customRecipeTemplate.Recipes[task.Recipe]; !ok {
-					return errors.New("Recipe \"" + task.Recipe + "\" not found")
+			if step.Recipe != "" {
+				if _, ok := customRecipeTemplate.Recipes[step.Recipe]; !ok {
+					return errors.New("Recipe \"" + step.Recipe + "\" not found")
 				}
 			} else {
-				for _, recipe := range task.Recipes {
+				for _, recipe := range step.Recipes {
 					if _, ok := customRecipeTemplate.Recipes[recipe]; !ok {
 						return errors.New("Recipe \"" + recipe + "\" not found")
 					}
@@ -255,38 +270,45 @@ func validateRecipeTask(task *app.AppRecipeTask) error {
 			}
 		}
 
+	} else if step.RunCmd != "" {
+		//TODO do some validation of the command
 	} else {
-		return errors.New("Task does not specify template and recipe")
+		return errors.New("Step does not specify template/recipe or cmd")
 	}
 	return nil
 }
 
-func ExecuteTasks(parsedRecipe *appctl.ParsedRecipe, appConfig *app.AppConfig) error {
+func ExecuteRecipeSteps(parsedRecipe *appctl.ParsedRecipe, appConfig *app.AppConfig) error {
 	// fmt.Println("-------------------------------------------")
 	// defer fmt.Println("-------------------------------------------")
-	if tasks, ok := appConfig.Spec.Recipes[parsedRecipe.RecipeName]; ok {
-		// tasks from app.yaml
-		for _, task := range tasks {
+	if recipe, ok := appConfig.Spec.Recipes[parsedRecipe.RecipeName]; ok {
+		// steps from app.yaml
+		for _, step := range recipe.Steps {
 			fmt.Println()
-			if task.Name != "" {
-				fmt.Println("  -> Executing task \"" + task.Name + "\"")
+			if step.Name != "" {
+				fmt.Println("  -> Executing step \"" + step.Name + "\"")
 			}
-			if task.Template == "appctl" {
-				err := executeAppctlTask(&task)
+			if parsedRecipe.CommandMode {
+				err := executeCustomCommandStep(appConfig, parsedRecipe.RecipeName, &recipe, &step)
+				if err != nil {
+					return err
+				}
+			} else if step.Template == "appctl" {
+				err := executeAppctlStep(&step)
 				if err != nil {
 					return err
 				}
 			} else {
 				//makefile based
-				err := executeMakefileTask(appConfig, &task)
+				err := executeMakefileStep(appConfig, &recipe, &step)
 				if err != nil {
 					return err
 				}
 			}
 		}
 	} else {
-		// tasks from global template
-		err := executeMakefileTask(appConfig, &app.AppRecipeTask{
+		// steps from global template
+		err := executeMakefileStep(appConfig, &app.AppRecipe{Vars: []app.InputVar{}}, &app.AppRecipeStep{
 			Template: parsedRecipe.TemplateName,
 			Recipe:   parsedRecipe.TemplateRecipe,
 			Vars:     []app.InputVar{},
@@ -301,12 +323,29 @@ func ExecuteTasks(parsedRecipe *appctl.ParsedRecipe, appConfig *app.AppConfig) e
 	return nil
 }
 
-func executeAppctlTask(task *app.AppRecipeTask) error {
+func executeCustomCommandStep(appConfig *app.AppConfig, recipeName string, recipe *app.AppRecipe, step *app.AppRecipeStep) error {
+
+	vars := loadVars(appConfig, recipe, step)
+
+	if step.Name != "" {
+		fmt.Println()
+		fmt.Println("    -> Step \"" + step.Name + "\" , from recipe \"" + recipeName + "\"")
+		fmt.Println()
+	}
+	err := cmd.RunCustomCommand(step.RunCmd, appConfig.ProjectDir, vars)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func executeAppctlStep(step *app.AppRecipeStep) error {
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	for _, targetapp := range task.Apps {
+	for _, targetapp := range step.Apps {
 
 		var appConfigFiles []string = []string{}
 		filepath.Walk(currentDir, func(path string, info os.FileInfo, err error) error {
@@ -336,16 +375,16 @@ func executeAppctlTask(task *app.AppRecipeTask) error {
 		targetAppConfigFile := appConfigFiles[0]
 
 		var appctlRecipesToRun []string = []string{}
-		if task.Recipe != "" {
-			appctlRecipesToRun = append(appctlRecipesToRun, task.Recipe)
+		if step.Recipe != "" {
+			appctlRecipesToRun = append(appctlRecipesToRun, step.Recipe)
 		}
-		if len(task.Recipes) != 0 {
-			appctlRecipesToRun = append(appctlRecipesToRun, task.Recipes...)
+		if len(step.Recipes) != 0 {
+			appctlRecipesToRun = append(appctlRecipesToRun, step.Recipes...)
 		}
 		for _, appctlRecipe := range appctlRecipesToRun {
-			if task.Name != "" {
+			if step.Name != "" {
 				fmt.Println()
-				fmt.Println("    -> Task \"" + task.Name + "\" , executing recipe \"" + appctlRecipe + "\"")
+				fmt.Println("    -> Step \"" + step.Name + "\" , from recipe \"" + appctlRecipe + "\"")
 				fmt.Println()
 			}
 			err = ExecRecipe([]string{}, appctlRecipe, filepath.Dir(targetAppConfigFile), targetAppConfigFile)
@@ -357,42 +396,33 @@ func executeAppctlTask(task *app.AppRecipeTask) error {
 	return nil
 }
 
-func executeMakefileTask(appConfig *app.AppConfig, task *app.AppRecipeTask) error {
+func executeMakefileStep(appConfig *app.AppConfig, recipe *app.AppRecipe, step *app.AppRecipeStep) error {
 
 	var templateRecipesToRun []string = []string{}
 
-	if task.Recipe != "" {
-		templateRecipesToRun = append(templateRecipesToRun, task.Recipe)
+	if step.Recipe != "" {
+		templateRecipesToRun = append(templateRecipesToRun, step.Recipe)
 	}
-	if len(task.Recipes) != 0 {
-		templateRecipesToRun = append(templateRecipesToRun, task.Recipes...)
+	if len(step.Recipes) != 0 {
+		templateRecipesToRun = append(templateRecipesToRun, step.Recipes...)
 	}
 
 	for _, templateRecipe := range templateRecipesToRun {
-		makefile, err := catalog.GetMakefile(task.Template, templateRecipe)
+		makefile, err := catalog.GetMakefile(step.Template, templateRecipe)
 		if err != nil {
 			return err
 		}
 
-		//global level vars
-		vars := appConfig.Spec.Vars
-		//recipe level vars
-		vars = append(vars, task.Vars...)
-		// APP_NAME
-		vars = append(vars, app.InputVar{Name: "APP_NAME", Value: appConfig.Metadata.Name})
-		// APP_annotation
-		for k, v := range appConfig.Metadata.Annotations {
-			vars = append(vars, app.InputVar{Name: "APP_" + strings.ToUpper(k), Value: v})
-		}
+		vars := loadVars(appConfig, recipe, step)
 
-		if task.Name != "" {
+		if step.Name != "" {
 			fmt.Println()
-			fmt.Println("    -> Task \"" + task.Name + "\" , executing recipe \"" + templateRecipe + "\"")
+			fmt.Println("    -> Step \"" + step.Name + "\" , from recipe \"" + templateRecipe + "\"")
 			fmt.Println()
 		}
 		err = make.BuildProject(makefile, appConfig.ProjectDir, vars)
 		if err != nil {
-			return errors.New("Task failed")
+			return errors.New("Step failed")
 		}
 	}
 

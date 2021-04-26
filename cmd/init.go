@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/famartinrh/appctl/pkg/catalog"
-	"github.com/famartinrh/appctl/pkg/types/app"
+	v2 "github.com/famartinrh/appctl/pkg/types/app/v2"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
@@ -100,41 +100,71 @@ func runInitCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	templates, err := catalog.ListAvailableTemplates()
-	if err != nil {
-		return err
+	initOptionPrompt := promptui.Select{
+		Label: "app.yaml initialization",
+		Items: []string{"hello-world", "template"},
 	}
-	templateNames := []string{}
-	for _, t := range templates {
-		templateNames = append(templateNames, t.Template)
-	}
-	templateSelectPrompt := promptui.Select{
-		Label: "application template",
-		Items: templateNames,
-	}
-	_, appTemplate, err := templateSelectPrompt.Run()
+
+	_, initOption, err := initOptionPrompt.Run()
 	if err != nil {
 		return err
 	}
 
-	return writeAppConfigFile(appName, appDescription, author, organization, appTemplate)
-}
-
-func writeAppConfigFile(appName string, description string, author string, organization string, appTemplate string) error {
-
-	//TODO use template descriptor to print input values for template
-	if appTemplate != "" {
-		_, err := catalog.GetLocalTemplate(appTemplate)
+	var appConfig *v2.AppConfig = createAppConfig(appName, appDescription, author, organization)
+	if initOption == "hello-world" {
+		appConfig.Spec = v2.AppConfigSpec{
+			Recipes: map[string]v2.AppRecipe{
+				"print": {
+					Description: "A simple recipe with one step using a custom command",
+					Steps: []v2.AppRecipeStep{
+						{
+							Name:   "echo command",
+							RunCmd: "echo \"Hello World\"",
+						},
+					},
+				},
+			},
+		}
+	} else {
+		templates, err := catalog.ListAvailableTemplates()
 		if err != nil {
-			//TODO improve error handling and error messages
 			return err
+		}
+		templateNames := []string{}
+		for _, t := range templates {
+			templateNames = append(templateNames, t.Template)
+		}
+		templateSelectPrompt := promptui.Select{
+			Label: "application template",
+			Items: templateNames,
+		}
+		_, appTemplate, err := templateSelectPrompt.Run()
+		if err != nil {
+			return err
+		}
+
+		//TODO use template descriptor to print input values for template
+		if appTemplate != "" {
+			_, err := catalog.GetLocalTemplate(appTemplate)
+			if err != nil {
+				//TODO improve error handling and error messages
+				return err
+			}
+		}
+
+		appConfig.Spec = v2.AppConfigSpec{
+			Templates: []string{appTemplate},
 		}
 	}
 
-	appConfig := app.AppConfig{
-		APIVersion: "appctl.io/v1",
+	return writeAppConfigFile(appConfig)
+}
+
+func createAppConfig(appName string, description string, author string, organization string) *v2.AppConfig {
+	return &v2.AppConfig{
+		APIVersion: "appctl.io/v2",
 		Kind:       "App",
-		Metadata: app.AppMetadata{
+		Metadata: v2.AppMetadata{
 			Name: appName,
 			Annotations: map[string]string{
 				"description":  description,
@@ -142,10 +172,11 @@ func writeAppConfigFile(appName string, description string, author string, organ
 				"organization": organization,
 			},
 		},
-		Spec: app.AppConfigSpec{
-			Templates: []string{appTemplate},
-		},
 	}
+}
+
+func writeAppConfigFile(appConfig *v2.AppConfig) error {
+
 	bytes, err := yaml.Marshal(appConfig)
 	if err != nil {
 		return err

@@ -12,8 +12,12 @@ type AppctlConfig struct {
 }
 
 type ParsedRecipe struct {
-	RecipeName string
-	Multistep  bool
+	RecipeName        string
+	RecipeDescription string
+
+	Multistep bool
+
+	CommandMode bool
 	//only if no multi step
 	TemplateName   string
 	TemplateRecipe string

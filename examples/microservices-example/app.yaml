@@ -1,5 +1,5 @@
 kind: App
-apiVersion: appctl.io/v1
+apiVersion: appctl.io/v2
 metadata:
   name: microservices-example
   annotations:
@@ -9,13 +9,15 @@ metadata:
 spec:
   recipes:
     build:
-      - name: build container images for all microservices
-        template: appctl
-        recipes:
-          - nodejs/build
-          - docker/build
-          # - push # uncomment to run docker push on all projects
-        apps:
-          - api-gateway
-          - fruits-service
-          - users-service
+      description: Complete build of all the apps and their respective container images
+      steps:
+        - name: build container images for all microservices
+          template: appctl
+          recipes:
+            - nodejs/build
+            - docker/build
+            # - push # uncomment to run docker push on all projects
+          apps:
+            - api-gateway
+            - fruits-service
+            - users-service

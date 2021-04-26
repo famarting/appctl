@@ -48,9 +48,11 @@ var statusCmd = &cobra.Command{
 			if parsedRecipe.Err != nil {
 				fmt.Println("    * " + parsedRecipe.RecipeName + " [ERROR] " + parsedRecipe.Err.Error())
 			} else if parsedRecipe.Multistep {
-				fmt.Println("    * " + parsedRecipe.RecipeName + " (from multistep recipe)")
+				fmt.Println("    * " + parsedRecipe.RecipeName + " (from multistep recipe) " + parsedRecipe.RecipeDescription)
+			} else if parsedRecipe.CommandMode {
+				fmt.Println("    * " + parsedRecipe.RecipeName + " (custom command recipe) " + parsedRecipe.RecipeDescription)
 			} else {
-				fmt.Println("    * " + parsedRecipe.RecipeName + " (from recipe \"" + parsedRecipe.TemplateRecipe + "\" in template \"" + parsedRecipe.TemplateName + "\")")
+				fmt.Println("    * " + parsedRecipe.RecipeName + " (from recipe \"" + parsedRecipe.TemplateRecipe + "\" in template \"" + parsedRecipe.TemplateName + "\") " + parsedRecipe.RecipeDescription)
 			}
 		}
 
